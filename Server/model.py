@@ -51,7 +51,7 @@ def find_similar_images(input_image,cls,processor,device,model,index,k=3):
     return similar_images
 
 def main(image, yolo_model, model, processor, device):
-    shutil.rmtree('cropped_objects', ignore_errors=True)
+    shutil.rmtree('temp/cropped_objects', ignore_errors=True)
     img = image
     results = yolo_model(img)
     
@@ -68,9 +68,9 @@ def main(image, yolo_model, model, processor, device):
         dataset_features = np.array(x)
         index = faiss.IndexFlatL2(dataset_features.shape[1])
         index.add(dataset_features)
-        os.makedirs('cropped_objects/general', exist_ok=True)
-        cv2.imwrite('cropped_objects/general/no_objects.jpg',img)
-        image = 'cropped_objects/general/no_objects.jpg'
+        os.makedirs('temp/cropped_objects/general', exist_ok=True)
+        cv2.imwrite('temp/cropped_objects/general/no_objects.jpg',img)
+        image = 'temp/cropped_objects/general/no_objects.jpg'
         similar = find_similar_images(image,-1,processor,device,model,index)
         return similar 
         
@@ -79,8 +79,8 @@ def main(image, yolo_model, model, processor, device):
         x1, y1, x2, y2, _ , cls = bbox
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
         cropped_img = img[y1:y2, x1:x2]
-        os.makedirs(f'cropped_objects/{names[int(cls)].lower()}', exist_ok=True)
-        cropped_img_path = f'cropped_objects/{names[int(cls)].lower()}/cropped_img_{i}.jpg'
+        os.makedirs(f'temp/cropped_objects/{names[int(cls)].lower()}', exist_ok=True)
+        cropped_img_path = f'temp/cropped_objects/{names[int(cls)].lower()}/cropped_img_{i}.jpg'
         cv2.imwrite(cropped_img_path,cropped_img)
         
         with open(f'feature_file/{int(cls)}.pkl', 'rb') as f:
