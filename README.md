@@ -53,7 +53,7 @@ python server.py
 4. Go to any webpage with any image of the product you want to browse.
 5. Click on the extension to view the results!
 
-# Working on Video Data
+### Working on Video Data
 To see the model working on video data, run:
 ```
 cd /Amazon-Hackon/Server
