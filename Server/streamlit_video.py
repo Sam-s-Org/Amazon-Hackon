@@ -6,12 +6,17 @@ from pathlib import Path
 import os
 import tempfile
 from model_ex import main
+from transformers import CLIPProcessor, CLIPModel
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 
 
 # Load YOLOv5 model
-yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path='yolov5/amazon_product_search_final/weights/yolov5x.pt')
+yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path='./model_weights/best.pt')
 names = yolo_model.names
 
 
@@ -28,7 +33,7 @@ if uploaded_file is not None:
     video_path = tfile.name
     st.video(video_path)
     # Define output directories
-    output_dir = 'result_yolo_video/'
+    output_dir = 'temp/result_yolo_video/'
     output_video_path = os.path.join(output_dir, 'output_video.mp4')
     detected_objects_dir = os.path.join(output_dir, 'detected_objects')
     shutil.rmtree(detected_objects_dir, ignore_errors=True)
@@ -80,21 +85,26 @@ if uploaded_file is not None:
     
     
     obj = os.listdir(detected_objects_dir)
+    if len(obj) == 0:
+        st.write("Sorry! No objects detected in the video.")
+        st.stop()
     answer=[]
-    for objects in obj:
-        obj_pth = os.path.join(detected_objects_dir, objects)
-        frame = sorted(os.listdir(obj_pth))
-        frame_pth = os.path.join(obj_pth, frame[0])
-        similar = main(frame_pth,yolo_model)
-        for ss in similar:
-            answer.append(ss)
+    for object in obj:
+        obj_pth = os.path.join(detected_objects_dir, object)
+        frames = sorted(os.listdir(obj_pth))
+        print(object)
+        for frame in frames:
+            frame_pth = os.path.join(obj_pth, frame)
+            similar = main(frame_pth,yolo_model,model, processor, device,names,object)
+            for ss in similar:
+                answer.append(ss)
     
     
     st.title("Product Details")
 
     products = answer
     # Loop through each product
-    for product in products:
+    for i,product in enumerate(products):
         name, image_url, product_link, rate, price = product
 
         # Create columns for layout
@@ -111,8 +121,10 @@ if uploaded_file is not None:
             st.write(f"**Rating:** {rate} / 5.0")
         
             # Create a button that links to the product page
-            if st.button(f"Go to Amazon", key=name):
-                st.markdown(f"[Click here to view the product]({product_link})")
+            st.markdown(
+                f'<a href="{product_link}" target="_blank"><button style="background-color:#0039a6; color:white; font-size:20px; padding:10px; border:none; border-radius:10px; cursor:pointer;">Go To Amazon</button></a>',
+                unsafe_allow_html=True
+            )
         
         # Add a separator between products
         st.markdown("---")

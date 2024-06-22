@@ -1,4 +1,3 @@
-import shutil
 from PIL import Image
 import torch
 import os
@@ -7,13 +6,19 @@ import os
 import numpy as np
 import pickle
 import pandas as pd
-from transformers import CLIPProcessor, CLIPModel
-from sklearn.neighbors import NearestNeighbors
+import shutil
+import faiss
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-model.to(device)
+
+names = ['Bags & Luggage',
+ 'Casual Shoes',
+ 'Formal Shoes',
+ 'Watches',
+ 'Shoes',
+ 'Jeans',
+ "Men's Fashion",
+ "Kids' Shoes",
+ 'All Electronics']
 
 def extract_features(image,processor,device,model):
     image = Image.open(image)
@@ -26,14 +31,10 @@ def extract_features(image,processor,device,model):
     image_features = image_features.cpu().numpy().reshape(-1)
     return image_features
 
-def find_similar_images(input_image,cls,neighbors,processor,device,model,names):
+def find_similar_images(input_image,cls,processor,device,model,index,class_name,k=2):
     input_features = extract_features(input_image,processor,device,model)
-    req_class = ['Bags & Luggage','All Electronics','Watches']
-    _ , indices = neighbors.kneighbors([input_features])
-    if( cls ==-1):
-        df = pd.read_csv('files/general.csv')
-    else:
-        df = pd.read_csv(f'files/{req_class[cls]}.csv')
+    _, indices = index.search(np.array([input_features]), k)
+    df = pd.read_csv(f'files/{class_name}.csv')
         
     dataset_image_url = df['image'].values.tolist()
     dataset_link = df['link'].values.tolist()
@@ -46,92 +47,22 @@ def find_similar_images(input_image,cls,neighbors,processor,device,model,names):
     
     return similar_images
 
-def general_search(cropped_img_path,processor,device,model,names):
-    with open('feature_file/general.pkl', 'rb') as f:
-        dataset_features = pickle.load(f)
-        
-    x = []
-    for i in dataset_features:
-        for j in i:
-            x.append(j)
+def find_key_for_value(dictionary, value):
+    keys = [key for key, val in dictionary.items() if val == value]
+    return keys[0] if keys else None
+
+def main(image, yolo_model, model, processor, device,names,class_name):
+    shutil.rmtree('cropped_objects', ignore_errors=True)
+    cls = find_key_for_value(names, class_name)
+    ans = []
+    with open(f'feature_file/{int(cls)}.pkl', 'rb') as f:
+            dataset_features = pickle.load(f)
             
-    dataset_features = np.array(x)
-    neighbors = NearestNeighbors(n_neighbors=3, algorithm='brute',metric='euclidean').fit(dataset_features)
+    dataset_features = np.array(dataset_features)
+    index = faiss.IndexFlatL2(dataset_features.shape[1])
+    index.add(dataset_features)
+    similar = find_similar_images(image,-1,processor,device,model,index,class_name)
+    for ss in similar:
+        ans.append(ss)
+    return ans
     
-    similar = find_similar_images(cropped_img_path,-1,neighbors,processor,device,model,names)
-    return similar
-
-def main(image, yolo_model):
-    shutil.rmtree('cropped_objects_2', ignore_errors=True)
-    names = yolo_model.names
-    img = cv2.imread(image)
-    results = yolo_model(img)
-    bboxes = results.xyxy[0].cpu().numpy()
-    if(len(bboxes)==0):
-        os.makedirs('cropped_objects_2/general', exist_ok=True)
-        cv2.imwrite('cropped_objects_2/general/general.jpg', img)
-        image = 'cropped_objects_2/general/general.jpg'
-        return general_search(image,processor,device,model,names)
-    
-    gen_c = 0 
-    ans=[]
-    for i, bbox in enumerate(bboxes):
-        x1, y1, x2, y2, _ , cls = bbox
-        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-        cropped_img = img[y1:y2, x1:x2]
-        det_name = names[int(cls)]
-        names_cat1 = ['backpack','handbag','suitcase']
-        names_cat2 = ['laptop','mouse','remote','keyboard','cell phone']
-        names_cat3 = ['clock']
-        if det_name in names_cat1:
-            gen_c+=0
-            j=0
-        elif det_name in names_cat2:
-            gen_c+=1
-            j=1
-        elif det_name in names_cat3:
-            j=2
-            gen_c+=2
-        else:
-            gen_c+=-1
-            j=-1
-        if j!=-1:
-            os.makedirs(f'cropped_objects_2/{det_name.lower()}', exist_ok=True)
-            cropped_img_path = f'cropped_objects_2/{det_name.lower()}/cropped_img_{i}.jpg'
-            cv2.imwrite(cropped_img_path,cropped_img)
-            
-            cv2.imwrite(cropped_img_path, cropped_img)
-            with open(f'feature_file/{j}.pkl', 'rb') as f:
-                dataset_features = pickle.load(f)
-                
-            dataset_features = np.array(dataset_features)
-            neighbors = NearestNeighbors(n_neighbors=3, algorithm='brute',metric='euclidean').fit(dataset_features)
-            
-            similar = find_similar_images(cropped_img_path,j,neighbors,processor,device,model,names)
-            for ss in similar:
-                ans.append(ss)
-            
-    if gen_c == -len(bboxes):
-        os.makedirs('cropped_objects_2/general', exist_ok=True)
-        cv2.imwrite('cropped_objects_2/general/general.jpg', img)
-        image = 'cropped_objects_2/general/general.jpg'
-        return general_search(image,processor,device,model,names)
-    else:
-        return ans
-            
-    
-    
-    
-
-
-
-
-
-    
-    
-
-    
-    
-
-
-
