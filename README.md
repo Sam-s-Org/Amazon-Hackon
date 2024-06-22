@@ -12,7 +12,7 @@ We also created a pipeline for product search using video. The video given by a 
 ## Working/Pipeline
 **Object Detection**: Uses YOLO (You Only Look Once) to detect and classify objects from images and videos.\
 **Embedding Creation**: Uses CLIP for creating embedding vectors of images and frames.\
-**Similarity Search**: Uses l2 norm for finding K-nearest embedding vectors.
+**Similarity Search**: Uses L2 norm for finding K-nearest embedding vectors.
 
 ## Installation
 To get started, follow these steps:
@@ -25,14 +25,15 @@ cd Amazon-Hackon
 2. Download the Zip files containing weights and other required items from: 
 [Google Drive Link](https://drive.google.com/drive/folders/140h13DtZQCHc5Zt5CF00I3equNDAKSN7)
 
-3. Extract the zip files into the already present /Server folder. So now the Directory should look like:\
-Amazon-Hackon\
-|_ Browser Extension\
-|_ Server\
-  |_ feature_file\
-  |_ files\
-  |_ model_weights
-
+3. Extract the zip files into the already present /Server folder. So now the Directory should look like:
+```
+Amazon-Hackon
+  |_ Browser Extension
+  |_ Server
+        |_ feature_file
+        |_ files
+        |_ model_weights
+```
 4. Create a python environment and install the required dependencies listed in requirements.txt:
 ```
 pip install -r requirements.txt
