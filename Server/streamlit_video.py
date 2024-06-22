@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 import os
 import tempfile
-from model_ex import main
+from model_video import main
 from transformers import CLIPProcessor, CLIPModel
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

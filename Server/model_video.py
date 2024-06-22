@@ -1,8 +1,5 @@
 from PIL import Image
 import torch
-import os
-import cv2
-import os
 import numpy as np
 import pickle
 import pandas as pd

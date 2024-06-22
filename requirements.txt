@@ -1,0 +1,10 @@
+pillow
+torch
+opencv-python
+numpy
+pandas
+faiss-cpu
+transformers
+streamlit
+flask
+flask-cors
