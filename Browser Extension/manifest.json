@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Amazon Lens",
+    "description": "Quickly search for products from the website you are browsing",
+    "version": "1.0",
+    "action": {
+        "default_icon": {
+            
+        },
+        "default_popup": "/popup/popup.html"
+    },
+    "permissions": [
+        "activeTab"
+    ]
+}
