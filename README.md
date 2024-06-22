@@ -25,13 +25,13 @@ cd Amazon-Hackon
 2. Download the Zip files containing weights and other required items from: 
 [Google Drive Link](https://drive.google.com/drive/folders/140h13DtZQCHc5Zt5CF00I3equNDAKSN7)
 
-3. Extract the zip files into the already present /Server folder. So now the Directory should look like:\n
-Amazon-Hackon\n
-|_ Browser Extension\n
-|_ Server\n
-   |_ feature_file\n
-   |_ files\n
-   |_ model_weights\n
+3. Extract the zip files into the already present /Server folder. So now the Directory should look like:\
+Amazon-Hackon\
+|_ Browser Extension\
+|_ Server\
+   |_ feature_file\
+   |_ files\
+   |_ model_weights\
 
 4. Create a python environment and install the required dependencies listed in requirements.txt:
 ```
