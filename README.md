@@ -29,9 +29,9 @@ cd Amazon-Hackon
 Amazon-Hackon\
 |_ Browser Extension\
 |_ Server\
-   |_ feature_file\
-   |_ files\
-   |_ model_weights\
+   |_ feature_file\
+   |_ files\
+   |_ model_weights
 
 4. Create a python environment and install the required dependencies listed in requirements.txt:
 ```
