@@ -1,8 +1,10 @@
 // console.log("Starting...");
 
+const SERVER_URL = "localhost:5001"
+
 chrome.tabs.captureVisibleTab(null, {}, function (img) {
   // console.log(img);
-  fetch("https://d46a3d290a14e35a0e35c4fb84a7082b.serveo.net/search", {
+  fetch(`${SERVER_URL}/search`, {
     method: "POST",
     body: JSON.stringify({
       image: img.split(',')[1]
