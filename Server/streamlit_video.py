@@ -2,7 +2,6 @@ import streamlit as st
 import torch
 import cv2
 import shutil
-from pathlib import Path
 import os
 import tempfile
 from model_video import main
